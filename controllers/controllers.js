@@ -443,6 +443,104 @@ const searchPantryItems = async (req, res) => {
   }
 };
 
+
+// Update an existing pantry item
+const updatePantryItem = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { item_id } = req.params;
+
+    const {
+      item_name, category, quantity, unit, expiration_date, low_stock_threshold, 
+      is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher, 
+      contains_milk, contains_eggs, contains_fish, contains_shellfish, 
+      contains_tree_nuts, contains_peanuts, contains_wheat, contains_soybeans, contains_sesame
+    } = req.body;
+  
+
+    if (item_name) {
+      return res.status(400).json({ message: "Item name is required." });
+    }
+
+    // Verify the item exists and get ts pantry_id
+    const [itemRows] = await db.query(
+      "SELECT pantry_id FROM pantry_items WHERE item_id = ?",
+      [item_id]
+    );
+
+    if (itemRows.length === 0 ) {
+      return res.status(404).json({ message: "Item not found." });
+    }
+
+    // Verify user has access to this pantry
+    const [membershipRows] = await db.query(
+      "SELECT membership_id FROM pantry_members WHERE pantry_id = ? AND user_id = ?",
+      [itemRows[0].pantry_id, user_id]
+    );
+
+    if (membershipRows.length === 0) {
+      return res.status(403).json({ message: "You do not have access to this pantry." });
+    }
+
+    await db.query(
+      `UPDATE pantry_items SET
+        item_name = ?, category = ?, quantity = ?, unit = ?, expiration_date = ?, low_stock_threshold = ?,
+        is_vegan = ?, is_vegetarian = ?, is_gluten_free = ?, is_dairy_free = ?, is_halal = ?, is_kosher = ?,
+        contains_milk = ?, contains_eggs = ?, contains_fish = ?, contains_shellfish = ?,
+        contains_tree_nuts = ?, contains_peanuts = ?, contains_wheat = ?, contains_soybeans = ?, contains_sesame = ?
+      WHERE item_id = ?`,
+      [
+        item_name, category || null, quantity ?? 1, unit || null,
+        expiration_date || null, low_stock_threshold ?? 1,
+        !!is_vegan, !!is_vegetarian, !!is_gluten_free, !!is_dairy_free, !!is_halal, !!is_kosher,
+        !!contains_milk, !!contains_eggs, !!contains_fish, !!contains_shellfish,
+        !!contains_tree_nuts, !!contains_peanuts, !!contains_wheat, !!contains_soybeans, !!contains_sesame,
+        item_id
+      ]
+    );
+
+    res.status(200).json({ message: "Item updated successfully." });
+  } catch (error) {
+    console.error("Update pantry item error:", error);
+    res.status(500).json({ message: "Server error."});
+  }
+};
+
+// Delete a pantry item
+const deletePantryItem = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { item_id } = req.params;
+
+    // Versify the item exists and get its pantry_id
+    const [itemRows] = await db.query(
+      "SELECT pantry_id FROM pantry_items WHERE item_id = ?",
+      [item_id]
+    );
+
+    if (itemRows.length === 0) {
+      return res.status(404).json({ message: "Item not found." });
+    }
+
+    // Verify user has access to this pantry
+    const [membershipRows] = await db.query(
+      "SELECT membership_id FROM pantry_members WHERE pantry_id = ? AND user_id = ?",
+      [itemRows[0].pantry_id, user_id]
+    );
+
+    if (membershipRows.length === 0) {
+      return res.status(403).json({ message: "You do not have access to this pantry." });
+    }
+
+    await db.query("DELETE FROM pantry_items WHERE item_id = ?", [item_id]);
+
+    res.status(200).json({ message: "Item deleted successfully." });
+  }catch (error) {
+    console.error("Delete pantry item error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -452,6 +550,8 @@ module.exports = {
   getMyPantries,
   addPantryItem,
   getPantryItems,
-  searchPantryItems
+  searchPantryItems,
+  updatePantryItem, 
+  deletePantryItem
 };
 
