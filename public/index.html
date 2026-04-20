@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pantry</title>
+    <!-- Global stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Application header, persistent across all views -->
+<header>
+    <h1>🥗 Smart Pantry</h1>
+</header>
+
+<nav class="nav-bar" id="navBar" style="display:none;">
+    <a href="index.html">🏠 Home</a>
+    <span class="sep">,</span>
+    <a href="profile.html">👤 My Profile</a>
+</nav>
+
+<!--
+    Authentication View
+    Displayed when no valid session token is found in localStorage.
+    Contains both the login and registration forms.
+    Visibility is controlled by init() on page load.
+-->
+<div id="authSection" style="display:none;">
+    <div class="container">
+
+        <!-- Login Form -->
+        <div class="card" id="loginBox">
+            <h2>Sign In</h2>
+            <!-- Inline error display for failed login attempts -->
+            <p id="loginError" style="color:red; display:none;"></p>
+            <input type="email"    id="loginEmail"    placeholder="Email">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button onclick="login()">Sign In</button>
+            <p>No account? <a href="#" onclick="showRegister()">Create one</a></p>
+        </div>
+
+        <!-- Registration Form (hidden until toggled by showRegister()) -->
+        <div class="card" id="registerBox" style="display:none;">
+            <h2>Create Account</h2>
+            <!-- Inline error display for failed registration attempts -->
+            <p id="registerError" style="color:red; display:none;"></p>
+            <input type="text"     id="regUsername" placeholder="Username">
+            <input type="email"    id="regEmail"    placeholder="Email">
+            <input type="password" id="regPassword" placeholder="Password">
+            <button onclick="register()">Create Account</button>
+            <p>Already have an account? <a href="#" onclick="showLogin()">Sign in</a></p>
+        </div>
+
+    </div>
+</div>
+
+<!--
+    Main Application View
+    Displayed only after successful authentication.
+    Concealed by default and revealed via showApp() upon login.
+-->
+<div id="appSection" style="display:none;">
+    <div class="container">
+
+        <!-- Pantry Management Section -->
+         <div class="card">
+            <h2>My Pantries</h2>
+            <p id="pantryMsg" style="color:gray; font-size: 14px;"> Loading your pantries... </p>
+
+            <ul id="pantryList"></ul>
+         </div>
+
+        <!-- Create a New Pantry -->
+        <div class="card">
+            <h2>Create a Pantry</h2>
+            <p id="createPantryError" style="color:red; display:none;"></p>
+            <p id="createPantrySuccess" style="color: green; display: none;"></p>
+            <input type="text" id="newPantryName" placeholder="Pantry name">
+            <input type="text" id="newPantryDesc" placeholder="Desciption (optional)">
+            <button onclick="createPantry()">Create Pantry</button>
+        </div>
+
+        <!-- Join an Existing Pantry -->
+        <div class="card">
+            <h2>Join a Pantry</h2>
+            <p id="joinPantryError" style="color: red; display: none;"></p>
+            <p id="joinPantrySuccess" style="color: green; display: none;"></p>
+            <input type="number" id="joinPantryId" placeholder="Pantry ID">
+            <button onclick="joinPantry()">Join Pantry</button>
+        </div>
+
+        <!-- Pantry Item Entry Form -->
+        <div class="card">
+            <h2>Add Pantry Item</h2>
+            <input type="number" id="itemPantryId" placeholder="Pantry ID">
+            <input type="text"   id="itemName"  placeholder="Item name">
+            <input type="number" id="quantity"  placeholder="Quantity">
+            <input type="date"   id="expiryDate">
+            <!-- Dietary restriction tag selector -->
+            <select id="dietary">
+                <option value="">Dietary Tag</option>
+                <option value="vegan">Vegan</option>
+                <option value="gluten-free">Gluten Free</option>
+                <option value="dairy-free">Dairy Free</option>
+            </select>
+            <button onclick="addItem()">Add Item</button>
+        </div>
+
+        <!-- Pantry Item List, dynamically populated by script.js -->
+        <div class="card">
+            <h2>Pantry Items</h2>
+            <ul id="itemList"></ul>
+        </div>
+
+    <!-- Search & Filter Pantry Items -->
+    <div class="card">
+        <h2>Search & Filter Items</h2>
+
+        <input type="number" id="searchPantryId" placeholder="Pantry ID">
+        <input type="text"   id="searchQuery"    placeholder="Search by item name">
+        <input type="text"   id="searchCategory" placeholder="Category (optional)">
+
+        <div style="margin-top: 10px;">
+            <label><input type="checkbox" id="searchExpiringSoon"> Expiring soon (7 days)</label><br>
+            <label><input type="checkbox" id="searchLowStock"> Low stock only</label>
+        </div>
+
+        <h3 style="margin-top: 15px;">Dietary</h3>
+        <label><input type="checkbox" id="filterVegan"> Vegan</label>
+        <label><input type="checkbox" id="filterVegetarian"> Vegetarian</label>
+        <label><input type="checkbox" id="filterGlutenFree"> Gluten-Free</label>
+        <label><input type="checkbox" id="filterDairyFree"> Dairy-Free</label>
+        <label><input type="checkbox" id="filterHalal"> Halal</label>
+        <label><input type="checkbox" id="filterKosher"> Kosher</label>
+
+        <h3 style="margin-top: 15px;">Exclude Allergens</h3>
+        <label><input type="checkbox" id="excludeMilk"> Milk</label>
+        <label><input type="checkbox" id="excludeEggs"> Eggs</label>
+        <label><input type="checkbox" id="excludeFish"> Fish</label>
+        <label><input type="checkbox" id="excludeShellfish"> Shellfish</label>
+        <label><input type="checkbox" id="excludeTreeNuts"> Tree Nuts</label>
+        <label><input type="checkbox" id="excludePeanuts"> Peanuts</label>
+        <label><input type="checkbox" id="excludeWheat"> Wheat</label>
+        <label><input type="checkbox" id="excludeSoybeans"> Soybeans</label>
+        <label><input type="checkbox" id="excludeSesame"> Sesame</label>
+
+        <div style="margin-top: 15px;">
+            <button onclick="searchItems()">Search</button>
+            <button onclick="clearSearch()">Clear</button>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="card">
+        <h2>Search Results</h2>
+        <p id="searchStatus">No search performed yet.</p>
+        <ul id="searchResults"></ul>
+    </div>
+
+    </div>
+</div>
+
+<!-- Pantry item management logic -->
+<script src="script.js"></script>
+
+<script>
+    // Base endpoint for all authentication API requests
+    const API = "/api/auth";
+
+    /**
+     * Initializes the application on page load.
+     * Checks localStorage for an existing session token.
+     * Renders the appropriate view based on authentication state.
+     */
+    function init() {
+        const token = localStorage.getItem("token");
+        if (token) {
+            showApp();
+        } else {
+            document.getElementById("authSection").style.display = "block";
+            document.getElementById("navBar").style.display = "none";
+        }
+    }
+
+    /**
+     * Transitions from the authentication view to the main application view.
+     * Called after a successful login or when a valid token is detected.
+     */
+    function showApp() {
+        document.getElementById("authSection").style.display = "none";
+        document.getElementById("appSection").style.display  = "block";
+        document.getElementById("navBar").style.display = "flex";
+        loadPantries();
+    }
+
+    /**
+     * Toggles visibility from the login form to the registration form.
+     */
+    function showRegister() {
+        document.getElementById("loginBox").style.display    = "none";
+        document.getElementById("registerBox").style.display = "block";
+    }
+
+    /**
+     * Toggles visibility from the registration form back to the login form.
+     */
+    function showLogin() {
+        document.getElementById("registerBox").style.display = "none";
+        document.getElementById("loginBox").style.display    = "block";
+    }
+
+    /**
+     * Handles user registration.
+     * Validates form input, then submits a POST request to /api/auth/register.
+     * Displays server-side error messages inline on failure.
+     */
+    async function register() {
+        const errEl = document.getElementById("registerError");
+        errEl.style.display = "none";
+
+        // Collect and sanitize form input
+        const body = {
+            username: document.getElementById("regUsername").value.trim(),
+            email:    document.getElementById("regEmail").value.trim(),
+            password: document.getElementById("regPassword").value,
+        };
+
+        // Client-side validation before submitting to the server
+        if (!body.username || !body.email || !body.password) {
+            errEl.textContent   = "All fields are required.";
+            errEl.style.display = "block";
+            return;
+        }
+
+        try {
+            const res  = await fetch(`${API}/register`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(body),
+            });
+            const data = await res.json();
+
+            // Surface any server-side validation or conflict errors
+            if (!res.ok) {
+                errEl.textContent   = data.message;
+                errEl.style.display = "block";
+                return;
+            }
+
+            // Redirect user to login upon successful account creation
+            alert("Account created! Please sign in.");
+            showLogin();
+        } catch {
+            // Handle network failures or unexpected server errors
+            errEl.textContent   = "Server error. Try again.";
+            errEl.style.display = "block";
+        }
+    }
+
+    /**
+     * Handles user login.
+     * Submits credentials via POST to /api/auth/login.
+     * Persists the returned JWT and user object to localStorage on success.
+     */
+    async function login() {
+        const errEl = document.getElementById("loginError");
+        errEl.style.display = "none";
+
+        // Collect form input
+        const body = {
+            email:    document.getElementById("loginEmail").value.trim(),
+            password: document.getElementById("loginPassword").value,
+        };
+
+        try {
+            const res  = await fetch(`${API}/login`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(body),
+            });
+            const data = await res.json();
+
+            // Surface authentication errors returned by the server
+            if (!res.ok) {
+                errEl.textContent   = data.message;
+                errEl.style.display = "block";
+                return;
+            }
+
+            // Persist session token and user data for subsequent requests
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user",  JSON.stringify(data.user));
+
+            // Transition to the main application view
+            showApp();
+        } catch {
+            // Handle network failures or unexpected server errors
+            errEl.textContent   = "Server error. Try again.";
+            errEl.style.display = "block";
+        }
+    }
+
+    /**
+     * Fetches all pantries the currnet user belongs to and renders them.
+     */
+    async function loadPantries() {
+        const token = localStorage.getItem("token");
+        const msgEl = document.getElementById("pantryMsg");
+        const listEl = document.getElementById("pantryList");
+        listEl.innerHTML = "";
+
+        try {
+            const res = await fetch (`${API}/pantries`, {
+                headers: { "Authorization": `Bearer ${token}`}
+            });
+            const data = await res.json();
+
+            if(!res.ok) {
+                msgEl.textContent = data.message || "Could not load pantries.";
+                msgEl.style.display = "block";
+                return;
+            }
+
+            if (data.pantries.length === 0) {
+                msgEl.textContent = "You don't belong to any pantries yet. Create or Join one below!";
+                msgEl.style.display = "block";
+                return;
+            }
+
+            msgEl.style.display = "none";
+
+            data.pantries.forEach(p => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <span>
+                        <strong>${p.pantry_name}</strong>
+                        ${p.description ? " - " + p.description : ""}
+                    </span>
+                    <div>
+                        <span class="tag">${p.role}</span>
+                        <span class="tag">ID: ${p.pantry_id}</span>    
+                    </div>
+                `;
+                listEl.appendChild(li);
+            });
+        } catch {
+            msgEl.textContent = "Server error loading pantries.";
+            msgEl.style.display = "block";
+        }
+    }
+
+    /**
+     * Creates a new pantry via POST /api/auth/pantries.
+     * The logged-in user becomes the owner automatically.
+     */
+    async function createPantry() {
+        const token = localStorage.getItem("token");
+        const errEl = document.getElementById("createPantryError");
+        const succEl = document.getElementById("createPantrySuccess");
+        errEl.style.display = "none";
+        succEl.style.display = "none";
+
+        const pantry_name = document.getElementById("newPantryName").value.trim();
+        const description = document.getElementById("newPantryDesc").value.trim();
+        
+        if (!pantry_name) {
+            errEl.textContent   = "Pantry name is required.";
+            errEl.style.display = "block";
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API}/pantries`, {
+                method:  "POST",
+                headers: {
+                    "Content-Type":  "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ pantry_name, description: description || null })
+            });
+            const data = await res.json();
+ 
+            if (!res.ok) {
+                errEl.textContent   = data.message;
+                errEl.style.display = "block";
+                return;
+            }
+ 
+            succEl.textContent   = `Pantry "${data.pantry.pantry_name}" created! (ID: ${data.pantry.pantry_id})`;
+            succEl.style.display = "block";
+ 
+            // Clear inputs and refresh the list
+            document.getElementById("newPantryName").value = "";
+            document.getElementById("newPantryDesc").value = "";
+            loadPantries();
+ 
+        } catch {
+            errEl.textContent   = "Server error. Try again.";
+            errEl.style.display = "block";
+        }
+    }
+
+    /**
+     * Joins an existing pantry by its ID via POST /api/auth/pantries/join.
+     */
+    async function joinPantry() {
+        const token  = localStorage.getItem("token");
+        const errEl  = document.getElementById("joinPantryError");
+        const succEl = document.getElementById("joinPantrySuccess");
+        errEl.style.display  = "none";
+        succEl.style.display = "none";
+ 
+        const pantry_id = document.getElementById("joinPantryId").value.trim();
+ 
+        if (!pantry_id) {
+            errEl.textContent   = "Pantry ID is required.";
+            errEl.style.display = "block";
+            return;
+        }
+ 
+        try {
+            const res = await fetch(`${API}/pantries/join`, {
+                method:  "POST",
+                headers: {
+                    "Content-Type":  "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ pantry_id: parseInt(pantry_id) })
+            });
+            const data = await res.json();
+ 
+            if (!res.ok) {
+                errEl.textContent   = data.message;
+                errEl.style.display = "block";
+                return;
+            }
+ 
+            succEl.textContent   = "Successfully joined the pantry!";
+            succEl.style.display = "block";
+ 
+            // Clear input and refresh the list
+            document.getElementById("joinPantryId").value = "";
+            loadPantries();
+ 
+        } catch {
+            errEl.textContent   = "Server error. Try again.";
+            errEl.style.display = "block";
+        }
+    }
+
+    // Entry point — run on page load
+    init();
+</script>
+
+</body>
+</html>

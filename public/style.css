@@ -1,0 +1,144 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+}
+
+/* HEADER */
+header {
+    background: linear-gradient(90deg, #2a5298, #1e3c72);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+}
+
+/* CONTAINER */
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: 40px auto;
+}
+
+/* CARDS */
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* INPUTS */
+input, select {
+    padding: 12px;
+    margin: 8px 5px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 40%;
+    font-size: 14px;
+}
+
+/* BUTTON */
+button {
+    padding: 12px 18px;
+    background-color: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #1e3c72;
+}
+
+/* LIST */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: #f0f3f7;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* EXPIRING */
+.expiring {
+    border-left: 5px solid red;
+}
+
+/* LOW STOCK */
+.low-stock {
+    border-left: 5px solid orange;
+}
+
+/* TAG */
+.tag {
+    background-color: #dbeafe;
+    color: #1e3c72;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* Button To Go to Profile */
+header a{
+    background-color: beige;
+    color:rgba(0, 0, 0, 0.85);
+    text-decoration: none;
+    font-size: 15px;
+    float: right;
+    margin-top: 4px;
+}
+
+header a:hover {
+    color: white;
+}
+
+/* Nav Bar */
+.nav-bar {
+    background: #1e3c72;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-bar a  {
+    color: rgba(210, 180, 140, 0.95);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color .2s;
+}
+.nav-bar a:hover {
+    color: #fff;
+}
+
+/* Search & Filter card — let checkboxes be normal-sized */
+#appSection .card input[type="checkbox"] {
+    width: auto;
+    margin: 0 6px 0 0;
+    padding: 0;
+    vertical-align: middle;
+}
+
+/* Labels sit on their own row with the box next to the text */
+#appSection .card label {
+    display: inline-flex;
+    align-items: center;
+    margin: 4px 12px 4px 0;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Group dietary/allergen checkboxes into a tidy wrapping row */
+#appSection .card h3 + label {
+    margin-left: 0;
+}

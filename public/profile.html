@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pantry – My Profile</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Profile-page extras ── */
+        :root {
+            --navy:   #1e3c72;
+            --blue:   #2a5298;
+            --light:  #f5f7fa;
+            --white:  #ffffff;
+            --accent: #e8f0fe;
+            --tag-bg: #dbeafe;
+            --tag-fg: #1e3c72;
+            --red:    #dc2626;
+            --green:  #16a34a;
+            --warn:   #f59e0b;
+        }
+
+        /* Nav back link */
+        .nav-bar {
+            background: var(--navy);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .nav-bar a {
+            color: rgba(210,180,140,.95);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color .2s;
+        }
+        .nav-bar a:hover { color: #fff; }
+        .nav-bar .sep { color: rgba(255,255,255,.3); }
+
+        /* Page layout */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 28px;
+            width: 90%;
+            max-width: 960px;
+            margin: 36px auto 60px;
+        }
+
+        /* Sidebar avatar card */
+        .avatar-card {
+            background: var(--white);
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+            padding: 32px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            height: fit-content;
+        }
+        .avatar-ring {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            box-shadow: 0 4px 14px rgba(42,82,152,.35);
+        }
+        .avatar-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--navy);
+            text-align: center;
+        }
+        .avatar-email {
+            font-size: 13px;
+            color: #6b7280;
+            text-align: center;
+            word-break: break-all;
+        }
+        .member-since {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* Restriction summary badges in sidebar */
+        .sidebar-badges {
+            width: 100%;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .badge {
+            background: var(--tag-bg);
+            color: var(--tag-fg);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 9px;
+            border-radius: 20px;
+        }
+        .badge.allergy {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .no-badges {
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        /* Main form panel */
+        .form-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Section card */
+        .section-card {
+            background: var(--white);
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+            padding: 28px;
+        }
+        .section-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 0 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-card h3 span { font-size: 18px; }
+
+        /* Two-column input row */
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            padding: 11px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+            color: #111827;
+            transition: border-color .2s, box-shadow .2s;
+            width: 100%;
+            box-sizing: border-box;
+            background: var(--light);
+        }
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(42,82,152,.12);
+            background: #fff;
+        }
+        .input-group textarea { resize: vertical; min-height: 80px; }
+
+        /* Checkbox grid */
+        .check-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 10px;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: border-color .18s, background .18s;
+            user-select: none;
+        }
+        .check-item:hover { border-color: var(--blue); background: var(--accent); }
+        .check-item input[type="checkbox"] { display: none; }
+        .check-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background .18s, border-color .18s;
+            font-size: 11px;
+            color: #fff;
+        }
+        .check-item.checked .check-box {
+            background: var(--blue);
+            border-color: var(--blue);
+        }
+        .check-item.checked.allergy-item .check-box {
+            background: var(--red);
+            border-color: var(--red);
+        }
+        .check-item.checked { border-color: var(--blue); background: var(--accent); }
+        .check-item.checked.allergy-item { border-color: #fca5a5; background: #fff1f2; }
+        .check-label { font-size: 13px; font-weight: 500; color: #374151; }
+
+        /* Save button */
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--navy), var(--blue));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s, transform .15s;
+            letter-spacing: .3px;
+        }
+        .btn-save:hover { opacity: .9; transform: translateY(-1px); }
+        .btn-save:active { transform: translateY(0); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: var(--green);
+            color: #fff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,.18);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .profile-grid { grid-template-columns: 1fr; }
+            .input-row    { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🥗 Smart Pantry</h1>
+</header>
+
+<nav class="nav-bar">
+    <a href="index.html">🏠 Home</a>
+    <span class="sep">›</span>
+    <a href="#">My Profile</a>
+    <a href="#" onclick="logout()" style="margin-left: auto;">🚪LogOut</a>
+</nav>
+
+<div class="profile-grid">
+
+    <!-- ── Sidebar ── -->
+    <aside class="avatar-card">
+        <div class="avatar-ring" id="avatarEmoji">👤</div>
+        <div class="avatar-name" id="sidebarName">Your Name</div>
+        <div class="avatar-email" id="sidebarEmail">your@email.com</div>
+        <div class="member-since">Member since March 2026</div>
+
+        <div class="sidebar-badges" id="sidebarBadges">
+            <span class="no-badges">No restrictions set yet</span>
+        </div>
+    </aside>
+
+    <!-- ── Main Form ── -->
+    <div class="form-panel">
+
+        <!-- Basic Info -->
+        <div class="section-card">
+            <h3><span>👤</span> Basic Information</h3>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" placeholder="e.g. Jamie" oninput="updateSidebar()">
+                </div>
+                <div class="input-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" placeholder="e.g. Smith" oninput="updateSidebar()">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" placeholder="e.g. jsmith42">
+                </div>
+                <div class="input-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" placeholder="e.g. jamie@email.com" oninput="updateSidebar()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Dietary Restrictions -->
+        <div class="section-card">
+            <h3><span>🥦</span> Dietary Restrictions</h3>
+            <div class="check-grid" id="dietaryGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Allergens -->
+        <div class="section-card">
+            <h3><span>⚠️</span> Food Allergies <small style="font-weight:400;color:#6b7280;font-size:12px;">(FDA Big 9)</small></h3>
+            <div class="check-grid" id="allergenGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Additional Notes -->
+        <div class="section-card">
+            <h3><span>📝</span> Additional Notes</h3>
+            <div class="input-group">
+                <label for="otherNotes">Any other restrictions or preferences not listed above?</label>
+                <textarea id="otherNotes" placeholder="e.g. I avoid high-fructose corn syrup, prefer organic produce…"></textarea>
+            </div>
+        </div>
+
+        <button class="btn-save" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">✅ Profile saved successfully!</div>
+
+<script>
+    
+    // Redirect to login if not authenticated
+    if (!localStorage.getItem("token")){
+        window.location.href = "index.html";
+    }
+
+    // ── Data Definitions 
+    const DIETARY = [
+        { id: "is_vegan",        label: "🌱 Vegan" },
+        { id: "is_vegetarian",   label: "🥕 Vegetarian" },
+        { id: "is_gluten_free",  label: "🌾 Gluten-Free" },
+        { id: "is_dairy_free",   label: "🥛 Dairy-Free" },
+        { id: "is_halal",        label: "☪️ Halal" },
+        { id: "is_kosher",       label: "✡️ Kosher" },
+    ];
+
+    const ALLERGENS = [
+        { id: "allergy_milk",      label: "🥛 Milk" },
+        { id: "allergy_eggs",      label: "🥚 Eggs" },
+        { id: "allergy_fish",      label: "🐟 Fish" },
+        { id: "allergy_shellfish", label: "🦐 Shellfish" },
+        { id: "allergy_tree_nuts", label: "🌰 Tree Nuts" },
+        { id: "allergy_peanuts",   label: "🥜 Peanuts" },
+        { id: "allergy_wheat",     label: "🌾 Wheat" },
+        { id: "allergy_soybeans",  label: "🫘 Soybeans" },
+        { id: "allergy_sesame",    label: "🌿 Sesame" },
+    ];
+
+    // State object mirrors schema columns
+    const profile = {
+        firstName: "", lastName: "", username: "", email: "",
+        is_vegan: false, is_vegetarian: false, is_gluten_free: false,
+        is_dairy_free: false, is_halal: false, is_kosher: false,
+        allergy_milk: false, allergy_eggs: false, allergy_fish: false,
+        allergy_shellfish: false, allergy_tree_nuts: false,
+        allergy_peanuts: false, allergy_wheat: false,
+        allergy_soybeans: false, allergy_sesame: false,
+        other_notes: ""
+    };
+
+    // ── Build Checkbox Grids ──────────────────────────────────────────
+    function buildGrid(containerId, items, isAllergy) {
+        const grid = document.getElementById(containerId);
+        items.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "check-item" + (isAllergy ? " allergy-item" : "");
+            div.dataset.key = item.id;
+            div.innerHTML = `
+                <input type="checkbox" id="${item.id}">
+                <div class="check-box">✓</div>
+                <label class="check-label" for="${item.id}">${item.label}</label>
+            `;
+            div.addEventListener("click", () => toggleCheck(div, item.id));
+            grid.appendChild(div);
+        });
+    }
+
+    function toggleCheck(div, key) {
+        profile[key] = !profile[key];
+        div.classList.toggle("checked", profile[key]);
+        updateSidebar();
+    }
+
+    // ── Sidebar Live Preview ──────────────────────────────────────────
+    function updateSidebar() {
+        const fn = document.getElementById("firstName").value.trim();
+        const ln = document.getElementById("lastName").value.trim();
+        const em = document.getElementById("email").value.trim();
+
+        document.getElementById("sidebarName").textContent  = (fn || ln) ? `${fn} ${ln}`.trim() : "Your Name";
+        document.getElementById("sidebarEmail").textContent = em || "your@email.com";
+
+        // Pick a fun avatar emoji based on first letter
+        const emojis = ["🧑","👩","🧔","👨","🧕","👳","👲","🧙"];
+        const idx = fn ? fn.charCodeAt(0) % emojis.length : 0;
+        document.getElementById("avatarEmoji").textContent = emojis[idx];
+
+        // Rebuild badges
+        const badgeContainer = document.getElementById("sidebarBadges");
+        badgeContainer.innerHTML = "";
+
+        const activeDiet  = DIETARY.filter(d => profile[d.id]);
+        const activeAllergy = ALLERGENS.filter(a => profile[a.id]);
+
+        if (!activeDiet.length && !activeAllergy.length) {
+            badgeContainer.innerHTML = '<span class="no-badges">No restrictions set yet</span>';
+            return;
+        }
+
+        activeDiet.forEach(d => {
+            const b = document.createElement("span");
+            b.className = "badge";
+            b.textContent = d.label;
+            badgeContainer.appendChild(b);
+        });
+        activeAllergy.forEach(a => {
+            const b = document.createElement("span");
+            b.className = "badge allergy";
+            b.textContent = a.label;
+            badgeContainer.appendChild(b);
+        });
+    }
+
+    // ── Validation ───────────────────────────────────────────────────
+    function validate() {
+        const required = ["firstName", "lastName", "username", "email"];
+        for (const id of required) {
+            const el = document.getElementById(id);
+            if (!el.value.trim()) {
+                el.focus();
+                el.style.borderColor = "var(--red)";
+                el.addEventListener("input", () => el.style.borderColor = "", { once: true });
+                return false;
+            }
+        }
+        // Basic email check
+        const email = document.getElementById("email").value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            const el = document.getElementById("email");
+            el.style.borderColor = "var(--red)";
+            el.focus();
+            return false;
+        }
+        return true;
+    }
+
+    // ── Save Profile ─────────────────────────────────────────────────
+    function saveProfile() {
+        if (!validate()) return;
+
+        // Collect field values
+        profile.firstName  = document.getElementById("firstName").value.trim();
+        profile.lastName   = document.getElementById("lastName").value.trim();
+        profile.username   = document.getElementById("username").value.trim();
+        profile.email      = document.getElementById("email").value.trim();
+        profile.other_notes = document.getElementById("otherNotes").value.trim();
+
+        // Persist to localStorage (simulates saving; real app would POST to backend)
+        localStorage.setItem("smartpantry_profile", JSON.stringify(profile));
+
+        console.log("Profile saved:", profile);
+        showToast();
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3200);
+    }
+
+    // ── Load Saved Profile ───────────────────────────────────────────
+    function loadProfile() {
+        const saved = localStorage.getItem("smartpantry_profile");
+        if (!saved) return;
+        const data = JSON.parse(saved);
+        Object.assign(profile, data);
+
+        if (data.firstName) document.getElementById("firstName").value = data.firstName;
+        if (data.lastName)  document.getElementById("lastName").value  = data.lastName;
+        if (data.username)  document.getElementById("username").value  = data.username;
+        if (data.email)     document.getElementById("email").value     = data.email;
+        if (data.other_notes) document.getElementById("otherNotes").value = data.other_notes;
+
+        // Re-apply checkbox states
+        [...DIETARY, ...ALLERGENS].forEach(item => {
+            if (data[item.id]) {
+                const div = document.querySelector(`[data-key="${item.id}"]`);
+                if (div) div.classList.add("checked");
+            }
+        });
+        updateSidebar();
+    }
+
+    //  Init
+    buildGrid("dietaryGrid",  DIETARY,   false);
+    buildGrid("allergenGrid", ALLERGENS, true);
+    loadProfile();
+
+    // Logout
+    function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "index.html"
+    }
+
+</script>
+
+</body>
+</html>
