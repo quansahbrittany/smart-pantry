@@ -362,6 +362,7 @@
                     <div>
                         <span class="tag">${p.role}</span>
                         <span class="tag">ID: ${p.pantry_id}</span>    
+                        ${p.role === "owner" ? `<button onclick="deletePantry(${p.pantry_id})" style="margin-left: 8px;">🗑️</button>` : ""}
                     </div>
                 `;
                 listEl.appendChild(li);
@@ -470,6 +471,36 @@
             errEl.style.display = "block";
         }
     }
+
+    /*
+    * Deletes a pantry owned by the current user.
+    * Prompts for confirmation before sending DELETE request.
+    * ALL items and memberships are removed via cascade.
+    */
+    async function deletePantry(pantryId) {
+        const token = localStorage.getItem("token");
+
+        if (!confirm("Delete this pantry? All items inside will be removed")) return;
+
+        try {
+            const res = await fetch(`${API}/pantries/${pantryId}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || "Could not delete pantry.");
+                return;
+            }
+
+            loadPantries();
+        } catch {
+            alert("Server error. Try again.");
+        }
+
+    }
+
 
     // Entry point — run on page load
     init();
