@@ -42,7 +42,7 @@ const loginUser = async (req, res) => {
     }
 
     const [rows] = await db.query(
-      "SELECT user_id, username, email, password_hash FROM users WHERE email = ?",
+      "SELECT user_id, username, email, password_hash FROM users WHERE email = ? OR username = ?",
       [identifier, identifier]
     );
 
