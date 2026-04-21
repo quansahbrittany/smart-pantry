@@ -607,7 +607,7 @@ const updateProfile = async (req, res) => {
     const user_id = req.user.id;
 
     const {
-      is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher,
+      first_name, last_name, is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher,
       allergy_milk, allergy_eggs, allergy_fish, allergy_shellfish,
       allergy_tree_nuts, allergy_peanuts, allergy_wheat, allergy_soybeans, allergy_sesame,
       other_notes
@@ -616,7 +616,8 @@ const updateProfile = async (req, res) => {
     // Insert or update the profile
     await db.query(
       `INSERT INTO user_profiles (
-        user_id, is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher,
+        user_id, first_name, last_name,
+        is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher,
         allergy_milk, allergy_eggs, allergy_fish, allergy_shellfish,
         allergy_tree_nuts, allergy_peanuts, allergy_wheat, allergy_soybeans, allergy_sesame,
         other_notes
@@ -632,6 +633,7 @@ const updateProfile = async (req, res) => {
         allergy_sesame = VALUES(allergy_sesame), other_notes = VALUES(other_notes)`,
       [
         user_id,
+        first_name || null, last_name || null,
         !!is_vegan, !!is_vegetarian, !!is_gluten_free, !!is_dairy_free, !!is_halal, !!is_kosher,
         !!allergy_milk, !!allergy_eggs, !!allergy_fish, !!allergy_shellfish,
         !!allergy_tree_nuts, !!allergy_peanuts, !!allergy_wheat, !!allergy_soybeans, !!allergy_sesame,

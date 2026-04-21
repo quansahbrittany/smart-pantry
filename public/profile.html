@@ -494,6 +494,8 @@
         profile.other_notes = document.getElementById("otherNotes").value.trim();
 
         const body = {
+            first_name: document.getElementById("firstName").value.trim(),
+            last_name: dcoument.getElementById("lastName").value.trime(),
             is_vegan: profile.is_vegan,
             is_vegetarian: profile.is_vegetarian,
             is_gluten_free: profile.is_gluten_free,
@@ -547,7 +549,9 @@
 
             // Populate basic info (from users table)
             if (data.username) document.getElementById("username").value = data.username;
-            if (data.email)    document.getElementById("email").value    = data.email;
+            if (data.email) document.getElementById("email").value = data.email;
+            if (data.first_name) document.getElementById("firstName").value = data.first_name;
+            if (data.last_name) document.getElementById("lastName").value = data.last_name;
 
             // Populate dietary and allergy checkboxes
             [...DIETARY, ...ALLERGENS].forEach(item => {
