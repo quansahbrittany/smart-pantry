@@ -541,6 +541,35 @@ const deletePantryItem = async (req, res) => {
   }
 };
 
+// Delete a pantry (owner only)
+const deletePantry = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { pantry_id } = req.params;
+
+    // Verify the pantry exists and the user is the owner
+    const [pantryRows] = await db.query(
+      "SELECT owner_id FROM pantries WHER pantry_id = ?",
+      [pantry_id]
+    );
+
+    if (pantryRows.length === 0) {
+      return res.status(404).json({ message: "Pantry not found." });
+    }
+
+    if (pantryRows[0].owner_id !== user_id) {
+      return res.status(403).json({ message: "only the owner can delete this pantry." });
+    }
+
+    await db.query("DELETE FROM pantries WHERE pantry_id = ?", [pantry_id]);
+
+    res.status(200).json({ message: "pantry deleted successfully." });
+  } catch (error) {
+    console.error("Delete pantry error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
