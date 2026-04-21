@@ -458,7 +458,7 @@ const updatePantryItem = async (req, res) => {
     } = req.body;
   
 
-    if (item_name) {
+    if (!item_name) {
       return res.status(400).json({ message: "Item name is required." });
     }
 
