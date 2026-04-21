@@ -19,6 +19,7 @@ async function addItem() {
         pantry_id: parseInt(pantry_id),
         item_name,
         quantity: parseFloat(quantity),
+        low_stock_threshold: parseFloat(document.getElementById("lowStockThreshold").value) || 1,
         expiration_date: date || null, 
         is_vegan:       document.getElementById("tagVegan").checked,
         is_vegetarian:  document.getElementById("tagVegetarian").checked,
@@ -71,6 +72,7 @@ async function addItem() {
         document.getElementById("itemPantryId").value = "";
         document.getElementById("itemName").value = "";
         document.getElementById("quantity").value = "";
+        document.getElementById("lowStockThreshold").value = "";
         document.getElementById("expiryDate").value = "";
         // Clear all tag checkboxes
         document.querySelectorAll("#appSection .card:nth-child(4) input[type=checkbox]")
@@ -255,6 +257,7 @@ function editItem(item) {
     document.getElementById("itemPantryId").value = item.pantry_id;
     document.getElementById("itemName").value = item.item_name;
     document.getElementById("quantity").value  = item.quantity;
+    document.getElementById("lowStockThreshold").value = item.low_stock_threshold || 1;
     document.getElementById("expiryDate").value = item.expiration_date
         ? item.expiration_date.split("T")[0] : "";
 
