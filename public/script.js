@@ -211,6 +211,19 @@ async function loadPantryItems(pantryId) {
         data.items.forEach(item => {
             const li = document.createElement("li");
 
+            // Flag expiring items
+            const today = new Date();
+            const expDate = item.expiration_date ? new Date(item.expiration_date) : null;
+            if (expDate) {
+                const diffDays = (expDate - today) / (1000 * 60 * 60 *24);
+                if (diffDays < 7) li.classList.add("expiring");
+            }
+
+            // Flag low stock items
+            if (parseFloat(item.quantity) <= (item.low_stock_threshold || 1)) {
+                li.classList.add("low-stock");
+            }
+
             const tags = [];
             if (item.is_vegan) tags.push("vegan");
             if (item.is_vegetarian) tags.push("vegetarian");
