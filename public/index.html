@@ -98,14 +98,29 @@
             <input type="text"   id="itemName"  placeholder="Item name">
             <input type="number" id="quantity"  placeholder="Quantity">
             <input type="date"   id="expiryDate">
+
             <!-- Dietary restriction tag selector -->
-            <select id="dietary">
-                <option value="">Dietary Tag</option>
-                <option value="vegan">Vegan</option>
-                <option value="gluten-free">Gluten Free</option>
-                <option value="dairy-free">Dairy Free</option>
-            </select>
-            <button onclick="addItem()">Add Item</button>
+            <h3 style="margin-top: 15px;">Dietary Tags</h3>
+            <label><input type="checkbox" id="tagVegan"> Vegan</label>
+            <label><input type="checkbox" id="tagVegetarian"> Vegetarian</label>
+            <label><input type="checkbox" id="tagGlutenFree"> Gluten-Free</label>
+            <label><input type="checkbox" id="tagDairyFree"> Dairy-Free</label>
+            <label><input type="checkbox" id="tagHalal"> Halal</label>
+            <label><input type="checkbox" id="tagKosher"> Kosher</label>
+
+            <!-- Allergy Restirction tag selector -->
+             <h3 style="margin-top: 15px;">Contains Allergens</h3>
+            <label><input type="checkbox" id="containsMilk"> Milk</label>
+            <label><input type="checkbox" id="containsEggs"> Eggs</label>
+            <label><input type="checkbox" id="containsFish"> Fish</label>
+            <label><input type="checkbox" id="containsShellfish"> Shellfish</label>
+            <label><input type="checkbox" id="containsTreeNuts"> Tree Nuts</label>
+            <label><input type="checkbox" id="containsPeanuts"> Peanuts</label>
+            <label><input type="checkbox" id="containsWheat"> Wheat</label>
+            <label><input type="checkbox" id="containsSoybeans"> Soybeans</label>
+            <label><input type="checkbox" id="containsSesame"> Sesame</label>
+
+            <button onclick="addItem()" style="margin-top: 15px;">Add Item</button>
         </div>
 
         <!-- Pantry Item List, dynamically populated by script.js -->
@@ -335,7 +350,7 @@
                 const li = document.createElement("li");
                 li.innerHTML = `
                     <span>
-                        <strong>${p.pantry_name}</strong>
+                        <strong><a href="#" onclick="loadPantryItems(${p.pantry_id}); return false;">${p.pantry_name}</a></strong>
                         ${p.description ? " - " + p.description : ""}
                     </span>
                     <div>

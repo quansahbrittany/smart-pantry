@@ -1,74 +1,92 @@
+
 async function addItem() {
     const token = localStorage.getItem("token");
 
-    const pantry_id = document.getElementById("itemPantryId").value.trim();
+    const pantryIdE1 = document.getElementById("itemPantryId");
+    const editingId = pantryIdE1.dataset.editingId;
+
+    const pantry_id = pantryIdE1.value.trim();
     const item_name = document.getElementById("itemName").value.trim();
-    const quantity  = document.getElementById("quantity").value;
-    const date      = document.getElementById("expiryDate").value;
-    const dietary   = document.getElementById("dietary").value;
+    const quantity = document.getElementById("quantity").value;
+    const date = document.getElementById("expiryDate").value;
 
     if (!pantry_id || !item_name || !quantity) {
         alert("Pantry ID, item name, and quantity are required.");
         return;
     }
 
-    // Map the dietary dropdown value to the boolean flags the backend expects
     const body = {
         pantry_id: parseInt(pantry_id),
         item_name,
         quantity: parseFloat(quantity),
-        expiration_date: date || null,
-        is_vegan:       dietary === "vegan",
-        is_gluten_free: dietary === "gluten-free",
-        is_dairy_free:  dietary === "dairy-free"
+        expiration_date: date || null, 
+        is_vegan:       document.getElementById("tagVegan").checked,
+        is_vegetarian:  document.getElementById("tagVegetarian").checked,
+        is_gluten_free: document.getElementById("tagGlutenFree").checked,
+        is_dairy_free:  document.getElementById("tagDairyFree").checked,
+        is_halal:       document.getElementById("tagHalal").checked,
+        is_kosher:      document.getElementById("tagKosher").checked,
+        contains_milk:      document.getElementById("containsMilk").checked,
+        contains_eggs:      document.getElementById("containsEggs").checked,
+        contains_fish:      document.getElementById("containsFish").checked,
+        contains_shellfish: document.getElementById("containsShellfish").checked,
+        contains_tree_nuts: document.getElementById("containsTreeNuts").checked,
+        contains_peanuts:   document.getElementById("containsPeanuts").checked,
+        contains_wheat:     document.getElementById("containsWheat").checked,
+        contains_soybeans:  document.getElementById("containsSoybeans").checked,
+        contains_sesame:    document.getElementById("containsSesame").checked
     };
 
     try {
-        const res = await fetch("/api/auth/pantries/items", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(body)
-        });
+        let res;
+        if (editingId) {
+            res = await fetch(`/api/auth/pantries/items/${editingId}` , {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+        } else {
+            res = await fetch("/api/auth/pantries/items", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+        }
+
         const data = await res.json();
 
         if (!res.ok) {
-            alert(data.message || "Could not add item.");
+            alert(data.message || "Could not save item.");
             return;
         }
 
-        // Build the list item in the UI
-        const li = document.createElement("li");
-
-        const today = new Date();
-        const expDate = date ? new Date(date) : null;
-        if (expDate) {
-            const diffDays = (expDate - today) / (1000 * 60 * 60 * 24);
-            if (diffDays < 3) li.classList.add("expiring");
-        }
-        if (parseFloat(quantity) <= 1) li.classList.add("low-stock");
-
-        li.innerHTML = `
-            <span>${item_name} (${parseFloat(quantity)}) - ${date || "No expiry"}</span>
-            <div>
-                ${dietary ? `<span class="tag">${dietary}</span>` : ""}
-                <button onclick="this.parentElement.parentElement.remove()">X</button>
-            </div>
-        `;
-        document.getElementById("itemList").appendChild(li);
-
-        // Clear inputs
+        // Clear form and reset edit state
+        const savedPantryId = pantry_id;
         document.getElementById("itemPantryId").value = "";
         document.getElementById("itemName").value = "";
         document.getElementById("quantity").value = "";
         document.getElementById("expiryDate").value = "";
-        document.getElementById("dietary").value = "";
+        // Clear all tag checkboxes
+        document.querySelectorAll("#appSection .card:nth-child(4) input[type=checkbox]")
+            .forEach(cb => cb.checked = false);
+        delete pantryIdE1.dataset.editingId;
+
+        const btn = document.querySelector("#appSection .card:nth-child(4) button");
+        btn.textContent = "Add Item";
+
+        // Reload items from the database
+        loadPantryItems(savedPantryId);
 
     } catch (err) {
         alert("Server error. Try again.");
     }
+
 }
 
 async function searchItems() {
@@ -170,4 +188,110 @@ function clearSearch() {
 
     document.getElementById("searchResults").innerHTML = "";
     document.getElementById("searchStatus").textContent = "No search performed yet.";
+}
+
+// Load and display items for a pantry
+async function loadPantryItems(pantryId) {
+    const token  = localStorage.getItem("token");
+    const listEl = document.getElementById("itemList");
+    listEl.innerHTML = "";
+
+    try {
+        const res = await fetch(`/api/auth/pantries/${pantryId}/items`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) return;
+
+        if (data.items.length === 0) {
+            listEl.innerHTML = "<li>No items in this pantry yet.</li>";
+            return;
+        }
+
+        data.items.forEach(item => {
+            const li = document.createElement("li");
+
+            const tags = [];
+            if (item.is_vegan) tags.push("vegan");
+            if (item.is_vegetarian) tags.push("vegetarian");
+            if (item.is_gluten_free) tags.push("gluten-free");
+            if (item.is_dairy_free) tags.push("dairy-free");
+            if (item.is_halal) tags.push("halal");
+            if (item.is_kosher) tags.push("kosher");
+
+            li.innerHTML = `
+                <span>
+                    <strong>${item.item_name}</strong> (${parseFloat(item.quantity)})
+                    — ${item.expiration_date ? item.expiration_date.split("T")[0] : "No expiry"}
+                </span>
+                <div>
+                    ${tags.map(t => `<span class="tag">${t}</span>`).join(" ")}
+                    <button onclick='editItem(${JSON.stringify(item)})'>✏️</button>
+                    <button onclick='deleteItem(${item.item_id}, this.closest("li"))'>🗑️</button>
+                </div>
+            `;
+            listEl.appendChild(li);
+        });
+    } catch {
+        console.error("Error loading items.");
+    }
+}
+
+// Edit: populate the form with existing item values
+function editItem(item) {
+    document.getElementById("itemPantryId").value = item.pantry_id;
+    document.getElementById("itemName").value = item.item_name;
+    document.getElementById("quantity").value  = item.quantity;
+    document.getElementById("expiryDate").value = item.expiration_date
+        ? item.expiration_date.split("T")[0] : "";
+
+    // Set dietary checkboxes
+    document.getElementById("tagVegan").checked = !!item.is_vegan;
+    document.getElementById("tagVegetarian").checked  = !!item.is_vegetarian;
+    document.getElementById("tagGlutenFree").checked = !!item.is_gluten_free;
+    document.getElementById("tagDairyFree").checked = !!item.is_dairy_free;
+    document.getElementById("tagHalal").checked = !!item.is_halal;
+    document.getElementById("tagKosher").checked  = !!item.is_kosher;
+
+    // Set allergen checkboxes
+    document.getElementById("containsMilk").checked = !!item.contains_milk;
+    document.getElementById("containsEggs").checked = !!item.contains_eggs;
+    document.getElementById("containsFish").checked = !!item.contains_fish;
+    document.getElementById("containsShellfish").checked = !!item.contains_shellfish;
+    document.getElementById("containsTreeNuts").checked = !!item.contains_tree_nuts;
+    document.getElementById("containsPeanuts").checked = !!item.contains_peanuts;
+    document.getElementById("containsWheat").checked = !!item.contains_wheat;
+    document.getElementById("containsSoybeans").checked = !!item.contains_soybeans;
+    document.getElementById("containsSesame").checked = !!item.contains_sesame;
+
+    document.getElementById("itemPantryId").dataset.editingId = item.item_id;
+
+    const btn = document.querySelector("#appSection .card:nth-child(4) button");
+    btn.textContent = "Update Item";
+
+    document.getElementById("itemName").scrollIntoView({ behavior: "smooth" });
+}
+
+// Delete an item from the database
+async function deleteItem(itemId, liElement) {
+    const token = localStorage.getItem("token");
+
+    if (!confirm("Delete this item?")) return;
+
+    try {
+        const res = await fetch(`/api/auth/pantries/items/${itemId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Could not delete item.");
+            return;
+        }
+
+        liElement.remove();
+    } catch {
+        alert("Server error. Try again.");
+    }
 }
