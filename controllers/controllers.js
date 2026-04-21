@@ -35,15 +35,15 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+    if (!identifier || !password) {
+      return res.status(400).json({ message: "Username/Email and password are required." });
     }
 
     const [rows] = await db.query(
       "SELECT user_id, username, email, password_hash FROM users WHERE email = ?",
-      [email]
+      [identifier, identifier]
     );
 
     if (rows.length === 0) {
@@ -549,7 +549,7 @@ const deletePantry = async (req, res) => {
 
     // Verify the pantry exists and the user is the owner
     const [pantryRows] = await db.query(
-      "SELECT owner_id FROM pantries WHER pantry_id = ?",
+      "SELECT owner_id FROM pantries WHERE pantry_id = ?",
       [pantry_id]
     );
 
