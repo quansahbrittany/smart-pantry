@@ -71,12 +71,14 @@ li {
 
 /* EXPIRING */
 .expiring {
-    border-left: 5px solid red;
+    background: #fee2fe;
+    border-left: 4px solid #f87171;
 }
 
 /* LOW STOCK */
 .low-stock {
-    border-left: 5px solid orange;
+    background: #fef9c3;
+    border-left: 4px solid #facc15 ;
 }
 
 /* TAG */
