@@ -29,6 +29,8 @@ CREATE TABLE users (
 CREATE TABLE user_profiles (
     profile_id        INT          NOT NULL AUTO_INCREMENT,
     user_id           INT          NOT NULL UNIQUE,             -- 1-to-1 with users
+    first_name        VARCHAR(50),
+    last_name         VARCHAR(50),
 
     -- Dietary restrictions
     is_vegan          BOOLEAN      NOT NULL DEFAULT FALSE,
