@@ -9,7 +9,9 @@ const {
   getMyPantries,
   addPantryItem,
   getPantryItems,
-  searchPantryItems
+  searchPantryItems, 
+  updatePantryItem, 
+  deletePantryItem
 } = require("../controllers/controllers");
 const authenticateToken = require("../middleware/middleware");
 
@@ -19,14 +21,10 @@ router.get("/me", authenticateToken, getMe);
 router.post("/pantries", authenticateToken, createPantry);
 router.post("/pantries/join", authenticateToken, joinPantry);
 router.get("/pantries", authenticateToken, getMyPantries);
-
-// Add item to pantry
 router.post("/pantries/items", authenticateToken, addPantryItem);
-
-// Search & filter items
-router.get("/pantries/items/search", authenticateToken, searchPantryItems)
-
-// Get all items in a pantry
+router.get("/pantries/items/search", authenticateToken, searchPantryItems);
 router.get("/pantries/:pantry_id/items", authenticateToken, getPantryItems);
+router.put("/pantries/items/:item_id", authenticateToken, updatePantryItem);
+router.delete("/pantries/items/:item_id", authenticateToken, deletePantryItem);
 
 module.exports = router;
