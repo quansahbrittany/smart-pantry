@@ -570,6 +570,82 @@ const deletePantry = async (req, res) => {
   }
 };
 
+// Get the logged-in user's profile
+const getProfile = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+
+    // Get user info
+    const [userRows] = await db.query(
+      "SELECT username, email FROM users WHERE user_id = ?",
+      [user_id]
+    );
+
+    // Get profile info (may not exist yet)
+    const [profileRows] = await db.query(
+      "SELECT * FROM user_profiles WHERE user_id = ?",
+      [user_id]
+    );
+
+    const user = userRows[0];
+    const profileData = profileRows.length > 0 ? profileRows[0] : {};
+
+    res.status(200).json({
+      username: user.username,
+      email: user.email,
+      ...profileData
+    });
+  } catch (error) {
+    console.error("Get profile error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// Save or update the logged-in user's profile
+const updateProfile = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+
+    const {
+      is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher,
+      allergy_milk, allergy_eggs, allergy_fish, allergy_shellfish,
+      allergy_tree_nuts, allergy_peanuts, allergy_wheat, allergy_soybeans, allergy_sesame,
+      other_notes
+    } = req.body;
+
+    // Insert or update the profile
+    await db.query(
+      `INSERT INTO user_profiles (
+        user_id, is_vegan, is_vegetarian, is_gluten_free, is_dairy_free, is_halal, is_kosher,
+        allergy_milk, allergy_eggs, allergy_fish, allergy_shellfish,
+        allergy_tree_nuts, allergy_peanuts, allergy_wheat, allergy_soybeans, allergy_sesame,
+        other_notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        is_vegan = VALUES(is_vegan), is_vegetarian = VALUES(is_vegetarian),
+        is_gluten_free = VALUES(is_gluten_free), is_dairy_free = VALUES(is_dairy_free),
+        is_halal = VALUES(is_halal), is_kosher = VALUES(is_kosher),
+        allergy_milk = VALUES(allergy_milk), allergy_eggs = VALUES(allergy_eggs),
+        allergy_fish = VALUES(allergy_fish), allergy_shellfish = VALUES(allergy_shellfish),
+        allergy_tree_nuts = VALUES(allergy_tree_nuts), allergy_peanuts = VALUES(allergy_peanuts),
+        allergy_wheat = VALUES(allergy_wheat), allergy_soybeans = VALUES(allergy_soybeans),
+        allergy_sesame = VALUES(allergy_sesame), other_notes = VALUES(other_notes)`,
+      [
+        user_id,
+        !!is_vegan, !!is_vegetarian, !!is_gluten_free, !!is_dairy_free, !!is_halal, !!is_kosher,
+        !!allergy_milk, !!allergy_eggs, !!allergy_fish, !!allergy_shellfish,
+        !!allergy_tree_nuts, !!allergy_peanuts, !!allergy_wheat, !!allergy_soybeans, !!allergy_sesame,
+        other_notes || null
+      ]
+    );
+
+    res.status(200).json({ message: "Profile saved successfully." });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -582,6 +658,8 @@ module.exports = {
   searchPantryItems,
   updatePantryItem, 
   deletePantryItem,
-  deletePantry
+  deletePantry,
+  getProfile,
+  updateProfile
 };
 

@@ -484,51 +484,86 @@
         return true;
     }
 
-    // ── Save Profile ─────────────────────────────────────────────────
-    function saveProfile() {
+    // Save Profile to database
+    async function saveProfile() {
         if (!validate()) return;
 
-        // Collect field values
-        profile.firstName  = document.getElementById("firstName").value.trim();
-        profile.lastName   = document.getElementById("lastName").value.trim();
-        profile.username   = document.getElementById("username").value.trim();
-        profile.email      = document.getElementById("email").value.trim();
+        const token = localStorage.getItem("token");
+
+        // Collect checkbox values into profile object
         profile.other_notes = document.getElementById("otherNotes").value.trim();
 
-        // Persist to localStorage (simulates saving; real app would POST to backend)
-        localStorage.setItem("smartpantry_profile", JSON.stringify(profile));
+        const body = {
+            is_vegan: profile.is_vegan,
+            is_vegetarian: profile.is_vegetarian,
+            is_gluten_free: profile.is_gluten_free,
+            is_dairy_free: profile.is_dairy_free,
+            is_halal: profile.is_halal,
+            is_kosher: profile.is_kosher,
+            allergy_milk: profile.allergy_milk,
+            allergy_eggs: profile.allergy_eggs,
+            allergy_fish: profile.allergy_fish,
+            allergy_shellfish: profile.allergy_shellfish,
+            allergy_tree_nuts: profile.allergy_tree_nuts,
+            allergy_peanuts: profile.allergy_peanuts,
+            allergy_wheat: profile.allergy_wheat,
+            allergy_soybeans: profile.allergy_soybeans,
+            allergy_sesame: profile.allergy_sesame,
+            other_notes: profile.other_notes
+        };
 
-        console.log("Profile saved:", profile);
-        showToast();
-    }
+        try {
+            const res = await fetch("/api/auth/profile", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
 
-    function showToast() {
-        const toast = document.getElementById("toast");
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 3200);
-    }
-
-    // ── Load Saved Profile ───────────────────────────────────────────
-    function loadProfile() {
-        const saved = localStorage.getItem("smartpantry_profile");
-        if (!saved) return;
-        const data = JSON.parse(saved);
-        Object.assign(profile, data);
-
-        if (data.firstName) document.getElementById("firstName").value = data.firstName;
-        if (data.lastName)  document.getElementById("lastName").value  = data.lastName;
-        if (data.username)  document.getElementById("username").value  = data.username;
-        if (data.email)     document.getElementById("email").value     = data.email;
-        if (data.other_notes) document.getElementById("otherNotes").value = data.other_notes;
-
-        // Re-apply checkbox states
-        [...DIETARY, ...ALLERGENS].forEach(item => {
-            if (data[item.id]) {
-                const div = document.querySelector(`[data-key="${item.id}"]`);
-                if (div) div.classList.add("checked");
+            if (!res.ok) {
+                alert(data.message || "Could not save profile.");
+                return;
             }
-        });
-        updateSidebar();
+
+            showToast();
+        } catch {
+            alert("Server error. Try again.");
+        }
+    }
+
+    // Load Profile from database 
+    async function loadProfile() {
+        const token = localStorage.getItem("token");
+
+        try {
+            const res = await fetch("/api/auth/profile", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) return;
+
+            // Populate basic info (from users table)
+            if (data.username) document.getElementById("username").value = data.username;
+            if (data.email)    document.getElementById("email").value    = data.email;
+
+            // Populate dietary and allergy checkboxes
+            [...DIETARY, ...ALLERGENS].forEach(item => {
+                if (data[item.id]) {
+                    profile[item.id] = true;
+                    const div = document.querySelector(`[data-key="${item.id}"]`);
+                    if (div) div.classList.add("checked");
+                }
+            });
+
+            if (data.other_notes) document.getElementById("otherNotes").value = data.other_notes;
+
+            updateSidebar();
+        } catch {
+            console.error("Error loading profile.");
+        }
     }
 
     //  Init
