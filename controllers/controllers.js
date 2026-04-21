@@ -581,6 +581,7 @@ module.exports = {
   getPantryItems,
   searchPantryItems,
   updatePantryItem, 
-  deletePantryItem
+  deletePantryItem,
+  deletePantry
 };
 

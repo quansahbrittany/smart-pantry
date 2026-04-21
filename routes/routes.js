@@ -11,7 +11,8 @@ const {
   getPantryItems,
   searchPantryItems, 
   updatePantryItem, 
-  deletePantryItem
+  deletePantryItem,
+  deletePantry
 } = require("../controllers/controllers");
 const authenticateToken = require("../middleware/middleware");
 
@@ -26,5 +27,6 @@ router.get("/pantries/items/search", authenticateToken, searchPantryItems);
 router.get("/pantries/:pantry_id/items", authenticateToken, getPantryItems);
 router.put("/pantries/items/:item_id", authenticateToken, updatePantryItem);
 router.delete("/pantries/items/:item_id", authenticateToken, deletePantryItem);
+router.delete("/pantries/:pantry_id", authenticateToken, deletePantry);
 
 module.exports = router;
