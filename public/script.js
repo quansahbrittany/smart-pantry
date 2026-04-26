@@ -316,9 +316,16 @@ function copyShoppingList() {
         return;
     }
 
-    navigator.clipboard.writeText("Shopping List:\n" + lines.join("\n"))
-        .then(() => alert("Shopping list copied to clipboard!"))
-        .catch(() => alert("Could not copy. Try manually selecting the text."));
+    const text = "Shopping List:\n" + lines.join("\n");
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+
+    alert("Shopping list copied to clipboard!");
 }
 
 // Load and display items for a pantry
