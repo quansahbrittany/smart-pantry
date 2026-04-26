@@ -470,7 +470,7 @@ const generateShoppingList = async (req, res) => {
         AND (
           quantity <= low_stock_threshold
           or (expiration_date IS NOT NULL
-            AND expiration_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY))
+            AND expiration_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY))
         )
       ORDER BY item_name ASC`,
       [pantry_id]
@@ -490,7 +490,7 @@ const generateShoppingList = async (req, res) => {
 
         if (diffDays < 0) {
           reasons.push("expired");
-        } else if (diffDays <= 3) {
+        } else if (diffDays <= 7) {
           reasons.push("expiring_soon");
         }
       }
