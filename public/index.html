@@ -183,6 +183,32 @@
     </div>
 </div>
 
+<!-- Shoping List Generator -->
+<div class="card">
+    <h2>Shopping List</h2>
+    <p style="color:gray; font-size:14px;">
+        Generate a list of items you need to buy or restock.
+    </p>
+
+    <input type="number" id="shoppingPantryId" placeholder="Pantry ID">
+    <button onclick="generateShoppingList()">Generate List</button>
+
+    <p id="shoppingStatus" style="color:gray; margin-top:10px;"></p>
+    <ul id="shoppingList"></ul>
+
+    <div id="shoppingManualAdd" style="display:none; margin-top:15px;
+         border-top:1px solid #ddd; padding-top:10px;">
+        <h3>Add Custom Item</h3>
+        <input type="text"   id="customShoppingItem" placeholder="Item name">
+        <input type="number" id="customShoppingQty"  placeholder="Quantity" value="1">
+        <button onclick="addCustomShoppingItem()">Add to List</button>
+    </div>
+
+    <div id="shoppingActions" style="display:none; margin-top:10px;">
+        <button onclick="copyShoppingList()">Copy List to Clipboard</button>
+    </div>
+</div>
+
 <!-- Pantry item management logic -->
 <script src="script.js"></script>
 
