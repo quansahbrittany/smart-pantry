@@ -192,6 +192,135 @@ function clearSearch() {
     document.getElementById("searchStatus").textContent = "No search performed yet.";
 }
 
+async function generateShoppingList() {
+    const token = localStorage.getItem("token");
+    const statusEl = document.getElementById("shoppingStatus");
+    const listEl = document.getElementById("shoppingList");
+    const manualEl = document.getElementById("shoppingManualAdd");
+    const actionsEl = document.getElementById("shoppingActions");
+
+    listEl.innerHTML = "";
+    statusEl.textContent = "Generating...";
+    manualEl.style.display = "none";
+    actionsEl.style.display = "none";
+
+    const pantryId = document.getElementById("shoppingPantryId").value.trim();
+
+    if (!pantryId) {
+        statusEl.textContent = "Please enter a pantry ID.";
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/auth/pantries/${pantryId}/shopping-list`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            statusEl.textContent = data.message || "Could not generate list.";
+            return;
+        }
+
+        if (data.items.length === 0) {
+            statusEl.textContent = "Your pantry is fully stocked! No items needed.";
+        } else {
+            statusEl.textContent = `${data.count} item(s) need restocking:`;
+        }
+
+        data.items.forEach(item => {
+            const reasonTags = item.reason.map(r => {
+                if (r === "low_stock") return '<span class="tag" style="background:#e67e22; color:#fff;">Low Stock</span>';
+                if (r === "expired") return '<span class="tag" style="background:#e74c3c; color:#fff;">Expired</span>';
+                if (r === "expiring_soon") return '<span class="tag" style="background:#f39c12; color:#fff;">Expiring Soon</span>';
+                return "";
+            }).join(" ");
+
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <span>
+                    <input type="checkbox" checked class="shopping-check">
+                    <strong>${item.item_name}</strong>
+                    ${item.category ? ` [${item.category}]` : ""}
+                    — Qty: ${parseFloat(item.quantity)}${item.unit ? " " + item.unit : ""}
+                </span>
+                <div>
+                    ${reasonTags}
+                    <button onclick="this.closest('li').remove()">X</button>
+                </div>
+            `;
+            listEl.appendChild(li);
+        });
+
+        manualEl.style.display = "block";
+        actionsEl.style.display = "block";
+
+    } catch (err) {
+        statusEl.textContent = "Network error. Try again.";
+    }
+}
+
+function addCustomShoppingItem() {
+    const nameInput = document.getElementById("customShoppingItem");
+    const qtyInput = document.getElementById("customShoppingQty");
+    const listEl = document.getElementById("shoppingList");
+
+    const name = nameInput.value.trim();
+    const qty = qtyInput.value || 1;
+
+    if (!name) {
+        alert("Please enter an item name.");
+        return;
+    }
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+        <span>
+            <input type="checkbox" checked class="shopping-check">
+            <strong>${name}</strong> — Qty: ${qty}
+        </span>
+        <div>
+            <span class="tag" style="background:#3498db; color:#fff;">Custom</span>
+            <button onclick="this.closest('li').remove()">X</button>
+        </div>
+    `;
+    listEl.appendChild(li);
+
+    nameInput.value = "";
+    qtyInput.value = "1";
+}
+
+function copyShoppingList() {
+    const items = document.querySelectorAll("#shoppingList li");
+
+    if (items.length === 0) {
+        alert("No items in the shopping list.");
+        return;
+    }
+
+    const lines = [];
+
+    items.forEach(li => {
+        const checkbox = li.querySelector(".shopping-check");
+
+        if (checkbox && checkbox.checked) {
+            const name = li.querySelector("span strong")?.textContent || "";
+            const qtyMatch = li.querySelector("span")?.textContent.match(/Qty:\s*([\d.]+)/);
+            lines.push(`- ${name}${qtyMatch ? " (x" + qtyMatch[1] + ")" : ""}`);
+        }
+    });
+
+    if (lines.length === 0) {
+        alert("No items are checked.");
+        return;
+    }
+
+    navigator.clipboard.writeText("Shopping List:\n" + lines.join("\n"))
+        .then(() => alert("Shopping list copied to clipboard!"))
+        .catch(() => alert("Could not copy. Try manually selecting the text."));
+}
+
 // Load and display items for a pantry
 async function loadPantryItems(pantryId) {
     const token  = localStorage.getItem("token");
