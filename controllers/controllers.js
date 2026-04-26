@@ -443,6 +443,73 @@ const searchPantryItems = async (req, res) => {
   }
 };
 
+// Shoping List Generation
+const generateShoppingList = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { pantry_id } = req.params;
+
+    if (!pantry_id) {
+      return res.status(400).json({ message: "Pantry ID is required." });
+    }
+
+    const [membershipRows] = await db.query(
+      "SELECT membership_id FROM pantry_members WHERE pantry_id = ? AND user_id = ?",
+      [pantry_id, user_id]
+    );
+
+    if (membershipRows.length === 0) {
+      return res.status(403).json({ message: "You do not have access to this pantry." });
+    };
+
+    const [rows] = await db.query(
+      `SELECT item_id, item_name, category, quantity, unit,
+        expiration_date, low_stock_threshold 
+      FROM pantry_items
+      WHERE pantry_id = ? 
+        AND (
+          quantity <= low_stock_threshold
+          or (expiration_date IS NOT NULL
+            AND expiration_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY))
+        )
+      ORDER BY item_name ASC`,
+      [pantry_id]
+    );
+
+    const items = rows.map(item => {
+      const reasons = [];
+
+      if (parseFloat(item.quantity) <= parseFloat(item.low_stock_threshold)) {
+        reasons.push("low_stock");
+      }
+
+      if (item.expiration_date) {
+        const exp = new Date(item.expiration_date);
+        const now = new Date();
+        const diffDays = (exp - now) / (1000 * 60 * 60 * 24);
+
+        if (diffDays < 0) {
+          reasons.push("expired");
+        } else if (diffDays <= 3) {
+          reasons.push("expiring_soon");
+        }
+      }
+
+      return { ...item, reason: reasons};
+    });
+
+    res.status(200).json({
+      message: "Shopping list generated.",
+      count: items.length,
+      items
+     });
+
+  } catch (error) {
+    console.error("Generate shopping list error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 
 // Update an existing pantry item
 const updatePantryItem = async (req, res) => {
@@ -662,6 +729,7 @@ module.exports = {
   deletePantryItem,
   deletePantry,
   getProfile,
-  updateProfile
+  updateProfile,
+  generateShoppingList
 };
 
