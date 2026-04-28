@@ -15,7 +15,8 @@ const {
   deletePantry,
   getProfile,
   updateProfile,
-  generateShoppingList
+  generateShoppingList,
+  checkEmailNotifications
 } = require("../controllers/controllers");
 const authenticateToken = require("../middleware/middleware");
 
@@ -34,6 +35,6 @@ router.delete("/pantries/:pantry_id", authenticateToken, deletePantry);
 router.get("/profile", authenticateToken, getProfile);
 router.put("/profile", authenticateToken, updateProfile);
 router.get("/pantries/:pantry_id/shopping-list", authenticateToken, generateShoppingList);
-
+router.get("/notifications/check", authenticateToken, checkEmailNotifications);
 
 module.exports = router;

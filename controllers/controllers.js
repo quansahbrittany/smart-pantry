@@ -510,6 +510,114 @@ const generateShoppingList = async (req, res) => {
   }
 };
 
+// Email Notifications
+// Checks for pantry items that are expiring soon or low in stock.
+// Records sent notifications in notification_logs to prevent duplicates.
+const checkEmailNotifications = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+        pi.item_id,
+        pi.item_name,
+        pi.quantity,
+        pi.unit,
+        pi.expiration_date,
+        pi.low_stock_threshold,
+        p.pantry_id,
+        p.pantry_name,
+        u.user_id,
+        u.email,
+
+        CASE
+          WHEN pi.expiration_date IS NOT NULL
+           AND pi.expiration_date >= CURDATE()
+           AND pi.expiration_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+          THEN 1
+          ELSE 0
+        END AS is_expiring_soon,
+
+        CASE
+          WHEN pi.quantity <= pi.low_stock_threshold
+          THEN 1
+          ELSE 0
+        END AS is_low_stock
+
+      FROM pantry_items pi
+      JOIN pantries p ON pi.pantry_id = p.pantry_id
+      JOIN pantry_members pm ON p.pantry_id = pm.pantry_id
+      JOIN users u ON pm.user_id = u.user_id
+      WHERE 
+        (
+          pi.expiration_date IS NOT NULL
+          AND pi.expiration_date >= CURDATE()
+          AND pi.expiration_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+          AND NOT EXISTS (
+            SELECT 1
+            FROM notification_logs nl
+            WHERE nl.item_id = pi.item_id
+              AND nl.user_id = u.user_id
+              AND nl.notification_type = 'expiration'
+          )
+        )
+        OR
+        (
+          pi.quantity <= pi.low_stock_threshold
+          AND NOT EXISTS (
+            SELECT 1
+            FROM notification_logs nl
+            WHERE nl.item_id = pi.item_id
+              AND nl.user_id = u.user_id
+              AND nl.notification_type = 'low_stock'
+          )
+        )
+      ORDER BY p.pantry_name, pi.item_name`
+    );
+
+    let notificationsCreated = 0;
+
+    for (const item of rows) {
+      if (item.is_expiring_soon === 1) {
+        console.log(
+          `Expiration email would be sent to ${item.email}: ${item.item_name} in ${item.pantry_name} is expiring soon.`
+        );
+
+        await db.query(
+          `INSERT IGNORE INTO notification_logs 
+            (item_id, user_id, notification_type)
+           VALUES (?, ?, 'expiration')`,
+          [item.item_id, item.user_id]
+        );
+
+        notificationsCreated++;
+      }
+
+      if (item.is_low_stock === 1) {
+        console.log(
+          `Low stock email would be sent to ${item.email}: ${item.item_name} in ${item.pantry_name} is low in stock.`
+        );
+
+        await db.query(
+          `INSERT IGNORE INTO notification_logs 
+            (item_id, user_id, notification_type)
+           VALUES (?, ?, 'low_stock')`,
+          [item.item_id, item.user_id]
+        );
+
+        notificationsCreated++;
+      }
+    }
+
+    res.status(200).json({
+      message: "Email notification check complete.",
+      itemsFound: rows.length,
+      notificationsCreated
+    });
+
+  } catch (error) {
+    console.error("Email notification error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
 
 // Update an existing pantry item
 const updatePantryItem = async (req, res) => {
@@ -730,6 +838,7 @@ module.exports = {
   deletePantry,
   getProfile,
   updateProfile,
-  generateShoppingList
+  generateShoppingList,
+  checkEmailNotifications
 };
 

@@ -2,6 +2,7 @@
 -- CS 370 Group 4: Zac Chittum, Ethan Beverly, Kelly Fitzgerald, Brittany Quansah, Christian Rauch --
 
 -- Drop Tables --
+DROP TABLE IF EXISTS notification_logs;
 DROP TABLE IF EXISTS pantry_members;
 DROP TABLE IF EXISTS pantry_items;
 DROP TABLE IF EXISTS user_profiles;
@@ -138,6 +139,28 @@ CREATE TABLE pantry_items (
         REFERENCES users (user_id) ON DELETE SET NULL
 );
 
+-- Notification Log Table --
+-- Tracks which email notifications have already been sent.
+-- Supports Sprint 3 email notifications for expiration and low stock.
+CREATE TABLE notification_logs (
+    notification_id   INT NOT NULL AUTO_INCREMENT,
+    item_id           INT NOT NULL,
+    user_id           INT NOT NULL,
+    notification_type ENUM('expiration', 'low_stock') NOT NULL,
+    sent_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (notification_id),
+
+    -- Prevents duplicate notifications of the same type
+    UNIQUE KEY uq_item_user_notification (item_id, user_id, notification_type),
+
+    CONSTRAINT fk_notification_item FOREIGN KEY (item_id)
+        REFERENCES pantry_items (item_id) ON DELETE CASCADE,
+
+    CONSTRAINT fk_notification_user FOREIGN KEY (user_id)
+        REFERENCES users (user_id) ON DELETE CASCADE
+);
+
 -- Indexes --
 -- Speeds up common queries
 CREATE INDEX idx_pantry_items_pantry    ON pantry_items (pantry_id);
@@ -146,3 +169,8 @@ CREATE INDEX idx_pantry_members_user    ON pantry_members (user_id);
 
 -- Add index for faster search
 CREATE INDEX idx_pantry_items_name ON pantry_items (item_name);
+
+-- Notification indexes
+CREATE INDEX idx_notification_logs_item ON notification_logs (item_id);
+CREATE INDEX idx_notification_logs_user ON notification_logs (user_id);
+CREATE INDEX idx_notification_logs_type ON notification_logs (notification_type);
