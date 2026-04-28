@@ -447,3 +447,35 @@ async function deleteItem(itemId, liElement) {
         alert("Server error. Try again.");
     }
 }
+
+// Check for email notifications (expiring/low stock items)
+async function checkNotifications() {
+    const token = localStorage.getItem("token");
+    const statusEl = document.getElementById("notifStatus");
+    const resultsEl = document.getElementById("notifResults");
+
+    statusEl.textContent = "Checking...";
+    resultsEl.innerHTML = "";
+
+    try {
+        const res = await fetch("/api/auth/notifications/check", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            statusEl.textContent = data.message || "Check failed.";
+            return;
+        }
+
+        if (data.notificationsCreated === 0) {
+            statusEl.textContent = "No new notifications to send.";
+            return;
+        }
+
+        statusEl.textContent = `${data.notificationsCreated} notification(s) would be sent.`;
+
+    } catch (err) {
+        statusEl.textContent = "Server error. Try again.";
+    }
+}
