@@ -1,146 +1,116 @@
 body {
     font-family: 'Segoe UI', sans-serif;
-    background-color: #f5f7fa;
+    background: linear-gradient(to bottom right, #f8fafc, #eef2ff);
     margin: 0;
+    color: #1f2937;
 }
 
 /* HEADER */
 header {
     background: linear-gradient(90deg, #2a5298, #1e3c72);
     color: white;
-    padding: 20px;
+    padding: 22px;
     text-align: center;
-    font-size: 24px;
+    font-size: 26px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
 }
 
 /* CONTAINER */
 .container {
-    width: 90%;
-    max-width: 900px;
-    margin: 40px auto;
+    width: 92%;
+    max-width: 950px;
+    margin: 35px auto;
 }
 
 /* CARDS */
 .card {
     background: white;
-    padding: 20px;
-    margin-bottom: 25px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transition: transform .2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
 }
 
 /* INPUTS */
 input, select {
-    padding: 12px;
+    padding: 12px 14px;
     margin: 8px 5px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    width: 40%;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    width: 44%;
     font-size: 14px;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #2a5298;
+    box-shadow: 0 0 0 3px rgba(42,82,152,.12);
 }
 
 /* BUTTON */
 button {
     padding: 12px 18px;
-    background-color: #2a5298;
+    background: linear-gradient(90deg,#2a5298,#1e3c72);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: 0.3s;
+    font-weight: 600;
+    transition: .25s ease;
 }
 
 button:hover {
-    background-color: #1e3c72;
+    transform: translateY(-1px);
+    opacity: .95;
 }
 
 /* LIST */
-ul {
-    list-style: none;
-    padding: 0;
-}
-
 li {
-    background: #f0f3f7;
+    background: #f8fafc;
     margin: 10px 0;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 14px;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
-}
-
-/* EXPIRING */
-.expiring {
-    background: #fee2fe;
-    border-left: 4px solid #f87171;
-}
-
-/* LOW STOCK */
-.low-stock {
-    background: #fef9c3;
-    border-left: 4px solid #facc15 ;
-}
-
-/* TAG */
-.tag {
-    background-color: #dbeafe;
-    color: #1e3c72;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
-/* Button To Go to Profile */
-header a{
-    background-color: beige;
-    color:rgba(0, 0, 0, 0.85);
-    text-decoration: none;
-    font-size: 15px;
-    float: right;
-    margin-top: 4px;
-}
-
-header a:hover {
-    color: white;
-}
-
-/* Nav Bar */
-.nav-bar {
-    background: #1e3c72;
-    padding: 10px 24px;
-    display: flex;
     align-items: center;
-    gap: 16px;
 }
 
-.nav-bar a  {
-    color: rgba(210, 180, 140, 0.95);
-    text-decoration: none;
+/* ALERT MESSAGES */
+.error-msg {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
     font-size: 14px;
-    transition: color .2s;
-}
-.nav-bar a:hover {
-    color: #fff;
 }
 
-/* Search & Filter card — let checkboxes be normal-sized */
-#appSection .card input[type="checkbox"] {
-    width: auto;
-    margin: 0 6px 0 0;
-    padding: 0;
-    vertical-align: middle;
-}
-
-/* Labels sit on their own row with the box next to the text */
-#appSection .card label {
-    display: inline-flex;
-    align-items: center;
-    margin: 4px 12px 4px 0;
+.success-msg {
+    background: #dcfce7;
+    color: #166534;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
     font-size: 14px;
-    cursor: pointer;
 }
 
-/* Group dietary/allergen checkboxes into a tidy wrapping row */
-#appSection .card h3 + label {
-    margin-left: 0;
+/* MOBILE */
+@media (max-width: 768px){
+    input, select {
+        width: 100%;
+        margin: 8px 0;
+    }
+
+    li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
 }
